@@ -3,7 +3,7 @@ import * as THREE from 'three';
 
 const BodyElement = (props) => {
 
-  const verticalVec = new THREE.Vector3(0,1,0);
+  const verticalVec = THREE.Object3D.DefaultUp;
   const startVec = new THREE.Vector3(props.start[0], props.start[1], props.start[2]);
   const endVec = new THREE.Vector3(props.end[0], props.end[1], props.end[2]);
   const legVec = endVec.clone().sub(startVec);
@@ -16,18 +16,20 @@ const BodyElement = (props) => {
   const quaternion = new THREE.Quaternion();
   quaternion.setFromAxisAngle(normalVec, angle);
 
+  const material = <meshStandardMaterial color={props.color || '#008080'} />;
+
   let startBump;
   if (props.startBump) {
     startBump = <mesh castShadow position={startVec} >
         <sphereGeometry args={[width * 2]} />
-        <meshStandardMaterial color='#008080' />
+        {material}
       </mesh>;
   }
   let endBump;
   if (props.endBump) {
     endBump = <mesh castShadow position={endVec} >
         <sphereGeometry args={[width * 2]} />
-        <meshStandardMaterial color='#008080' />
+        {material}
       </mesh>;
   }
 
@@ -35,7 +37,7 @@ const BodyElement = (props) => {
     <group>
       <mesh castShadow position={middleVec} quaternion={quaternion} >
         <cylinderGeometry args={[width, width, length]} />
-        <meshStandardMaterial color='#008080' />
+        {material}
       </mesh>
       {startBump}
       {endBump}
