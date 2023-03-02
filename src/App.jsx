@@ -54,7 +54,7 @@ const App = () => {
       <CssBaseline />
       <Box sx={{ margin: theme.spacing(), height: '100%' }}>
         <Box sx={{ display: 'grid', gridTemplateColumns: '2fr 1fr', height: '100%', columnGap: theme.spacing() }}>
-          <Box sx={{ overflow: 'hidden' }}>
+          <Box sx={{ overflow: 'hidden', aspectRatio: '4/3' }}>
             <ViewBox backendChannel={BackendChannel} />
           </Box>
           <Box>
