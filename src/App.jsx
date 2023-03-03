@@ -49,6 +49,8 @@ const App = () => {
     [prefersDarkMode]
   );
 
+  window.theme = theme;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -59,7 +61,7 @@ const App = () => {
           </Box>
           <Box>
             <Paper sx={{ padding: theme.spacing() }}>
-              <Joystick></Joystick>
+              <Joystick elevation={2}></Joystick>
             </Paper>
           </Box>
         </Box>
