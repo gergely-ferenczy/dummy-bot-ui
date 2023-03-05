@@ -4,27 +4,6 @@ import { alpha } from '@mui/system';
 import getOverlayAlpha from '@mui/material/styles/getOverlayAlpha';
 
 
-const JoystickHandle = styled('div', {
-  shouldForwardProp: (prop) => prop !== 'ownerState' && prop !== 'defaultPos' && prop !== 'pos',
-  name: 'Joystick',
-  slot: 'Handle'
-})(({ theme, ownerState, pos, defaultPos }) => ({
-  position: 'absolute',
-  left: (pos.x + 1) * (ownerState.size / 2) - ownerState.handleSize / 2,
-  top: (pos.y - 1) * -(ownerState.size / 2) - ownerState.handleSize / 2,
-  width: ownerState.handleSize,
-  height: ownerState.handleSize,
-  backgroundColor: theme.palette.primary.main,
-  borderRadius: '50%',
-  boxShadow: theme.shadows[ownerState.elevation],
-  ...(pos.x == 0.0 && pos.y == 0.0 && { transition: theme.transitions.create(
-    ['top', 'left'],
-    {
-      duration: theme.transitions.duration.short,
-    }
-  )})
-}));
-
 const JoystickRoot = styled('div', {
   name: 'Joystick',
   slot: 'Root'
@@ -42,16 +21,39 @@ const JoystickRoot = styled('div', {
   })
 }));
 
+const JoystickHandle = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'ownerState' && prop !== 'position',
+  name: 'Joystick',
+  slot: 'Handle'
+})(({ theme, ownerState, position }) => ({
+  position: 'absolute',
+  left: (position.x + 1) * (ownerState.size / 2) - ownerState.handleSize / 2,
+  top: (position.y - 1) * -(ownerState.size / 2) - ownerState.handleSize / 2,
+  width: ownerState.handleSize,
+  height: ownerState.handleSize,
+  backgroundColor: theme.palette.primary.main,
+  borderRadius: '50%',
+  boxShadow: theme.shadows[ownerState.elevation],
+  ...(position.x == 0.0 && position.y == 0.0 && { transition: theme.transitions.create(
+    ['top', 'left'],
+    {
+      duration: theme.transitions.duration.short,
+    }
+  )})
+}));
+
 
 const Joystick = (props) => {
   const theme = useTheme();
   const rootRef = useRef();
+  const [position, setPosition] = useState({x: 0.0, y: 0.0});
 
   const {
     elevation = 1,
     handleSize = 40,
     size = 100,
-    stickyHandle = false
+    stickyHandle = false,
+    onPositionChange
   } = props;
 
   const ownerState = {
@@ -61,7 +63,6 @@ const Joystick = (props) => {
     size
   }
   
-  const [jsPos, setJsPos] = useState({x: 0.0, y: 0.0});
 
   const handleMove = useCallback((e) => {
     if (e.buttons & 1) {
@@ -69,7 +70,7 @@ const Joystick = (props) => {
       const top = e.pageY - rootRef.current.offsetTop;
       let x = left / (size / 2) - 1;
       let y = 1 - top / (size / 2);
-console.log(x,y);
+  
       if (x >= 0.0) {
         x = Math.pow(x, 1.5);
       }
@@ -84,11 +85,13 @@ console.log(x,y);
       }
       const len = Math.sqrt(x*x + y*y);
 
-      if (len <= 1.0) {
-        setJsPos({x: x, y: y});
+      if (len > 1.0) {
+        x = x / len;
+        y = y / len;
       }
-      else {
-        setJsPos({x: x / len, y: y / len});
+      setPosition({x: x, y: y});
+      if (onPositionChange) {
+        onPositionChange({x, y});
       }
     }
   }, []);
@@ -100,7 +103,10 @@ console.log(x,y);
 
   const handleUp = useCallback((e) => {
     if (!stickyHandle) {
-      setJsPos({x: 0.0, y: 0.0});
+      setPosition({x: 0.0, y: 0.0});
+      if (onPositionChange) {
+        onPositionChange({x: 0.0, y: 0.0});
+      }
     }
 
     document.removeEventListener('mousemove', handleMove);
@@ -113,7 +119,7 @@ console.log(x,y);
         <line x1={'0px'} x2={'100%'} y1={'50%'} y2={'50%'}  style={{stroke: theme.palette.primary.dark, strokeDasharray: '5, 5'}} />
         <line x1={'50%'} x2={'50%'}  y1={'0px'} y2={'100%'} style={{stroke: theme.palette.primary.dark, strokeDasharray: '5, 5'}} />
       </svg>
-      <JoystickHandle ownerState={ownerState} pos={{x: jsPos.x, y: jsPos.y}} onMouseDown={handleDown} />
+      <JoystickHandle ownerState={ownerState} position={{x: position.x, y: position.y}} onMouseDown={handleDown} />
     </JoystickRoot>
   )
 };
