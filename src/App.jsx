@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { Box, Slider, Paper } from '@mui/material';
+import { Box, Slider, Paper, Stack } from '@mui/material';
 
 import Joystick from './Joystick'
 import ViewBox from './ViewBox'
@@ -11,24 +11,28 @@ import ViewBox from './ViewBox'
 const ControlPacket = {
   speed: 0.2,
   step: {x: 0.0, y: 0.0},
-  step_height: 0.03
+  step_height_weight: 1.0
 };
 const MonitorChannel = new WebSocket("ws://localhost:8080");
 const ControlChannel = new WebSocket("ws://localhost:8081");
 
 const updateSpeed = (e) => {
-  ControlPacket.speed = Math.sqrt(e.x*e.x + e.y*e.y);
+  const speed = Math.sqrt(e.x*e.x + e.y*e.y);
+  ControlPacket.speed = speed === 0.0 ? 0.5 : speed;
   ControlPacket.step = {x: e.x, y: e.y};
-  console.log(ControlPacket);
   if (ControlChannel.readyState == WebSocket.OPEN) {
+    console.log(ControlPacket.speed, ControlPacket.step);
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
 
-const updateStepHeight = (e, newValue) => {
-  ControlPacket.step_height = newValue;
-  console.log(ControlPacket);
+const updateStepHeightWeight = (e, newValue) => {
+  ControlPacket.speed = 0.1;
+  ControlPacket.step = {x: 0.0, y: ControlPacket.step.y < 1.0 ? 1.0 : 0.1};
+
+  ControlPacket.step_height_weight = newValue;
   if (ControlChannel.readyState == WebSocket.OPEN) {
+    console.log(ControlPacket.speed, ControlPacket.step);
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
@@ -78,8 +82,13 @@ const App = () => {
           </Box>
           <Box>
             <Paper sx={{ padding: theme.spacing() }}>
-              <Joystick elevation={2} stickyHandle onPositionChange={updateSpeed}></Joystick>
-              <Slider min={0.01} max={0.1} step={0.01} marks defaultValue={ControlPacket.step_height} onChange={updateStepHeight} valueLabelDisplay="auto" />
+              <Stack direction="row" spacing={2}>
+                <Joystick elevation={2} stickyAxis centerReturn onPositionChange={updateSpeed}></Joystick>
+                <Box>
+                  <Slider min={0.5} max={1.5} step={0.1} marks orientation="vertical" defaultValue={ControlPacket.step_height_weight} 
+                    onChange={updateStepHeightWeight} valueLabelDisplay="auto" />
+                </Box>
+              </Stack>
             </Paper>
           </Box>
         </Box>

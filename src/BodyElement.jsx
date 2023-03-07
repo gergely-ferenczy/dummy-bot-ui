@@ -17,6 +17,7 @@ const BodyElement = (props) => {
   quaternion.setFromAxisAngle(normalVec, angle);
 
   const material = <meshStandardMaterial color={props.color || '#008080'} />;
+  const materialHighlight = <meshStandardMaterial color="red" />;
 
   let startBump;
   if (props.startBump) {
@@ -29,7 +30,8 @@ const BodyElement = (props) => {
   if (props.endBump) {
     endBump = <mesh castShadow position={endVec} >
         <sphereGeometry args={[width * 2]} />
-        {material}
+        {!props.highlight && material}
+        {props.highlight && materialHighlight}
       </mesh>;
   }
 

@@ -84,17 +84,17 @@ const ViewBox = (props) => {
           <BodyElement start={ posData.legs[2][0] } end={posData.legs[3][0]} />
 
           <BodyElement start={ posData.legs[0][0] } end={posData.legs[0][1]} startBump />
-          <BodyElement start={ posData.legs[0][1] } end={posData.legs[0][2]} startBump endBump />
+          <BodyElement start={ posData.legs[0][1] } end={posData.legs[0][2]} startBump endBump highlight={posData.legs[0][2][1] == minLegHeightPos} />
           <BodyElement start={ posData.legs[1][0] } end={posData.legs[1][1]} startBump />
-          <BodyElement start={ posData.legs[1][1] } end={posData.legs[1][2]} startBump endBump />
+          <BodyElement start={ posData.legs[1][1] } end={posData.legs[1][2]} startBump endBump highlight={posData.legs[1][2][1] == minLegHeightPos} />
           <BodyElement start={ posData.legs[2][0] } end={posData.legs[2][1]} startBump />
-          <BodyElement start={ posData.legs[2][1] } end={posData.legs[2][2]} startBump endBump />
+          <BodyElement start={ posData.legs[2][1] } end={posData.legs[2][2]} startBump endBump highlight={posData.legs[2][2][1] == minLegHeightPos} />
           <BodyElement start={ posData.legs[3][0] } end={posData.legs[3][1]} startBump />
-          <BodyElement start={ posData.legs[3][1] } end={posData.legs[3][2]} startBump endBump />
+          <BodyElement start={ posData.legs[3][1] } end={posData.legs[3][2]} startBump endBump highlight={posData.legs[3][2][1] == minLegHeightPos} />
           <BodyElement start={ posData.legs[4][0] } end={posData.legs[4][1]} startBump />
-          <BodyElement start={ posData.legs[4][1] } end={posData.legs[4][2]} startBump endBump />
+          <BodyElement start={ posData.legs[4][1] } end={posData.legs[4][2]} startBump endBump highlight={posData.legs[4][2][1] == minLegHeightPos} />
           <BodyElement start={ posData.legs[5][0] } end={posData.legs[5][1]} startBump />
-          <BodyElement start={ posData.legs[5][1] } end={posData.legs[5][2]} startBump endBump />
+          <BodyElement start={ posData.legs[5][1] } end={posData.legs[5][2]} startBump endBump highlight={posData.legs[5][2][1] == minLegHeightPos} />
         </group>
       }
 
