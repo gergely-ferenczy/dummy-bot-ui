@@ -27,9 +27,6 @@ const updateSpeed = (e) => {
 };
 
 const updateStepHeightWeight = (e, newValue) => {
-  ControlPacket.speed = 0.1;
-  ControlPacket.step = {x: 0.0, y: ControlPacket.step.y < 1.0 ? 1.0 : 0.1};
-
   ControlPacket.step_height_weight = newValue;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     console.log(ControlPacket.speed, ControlPacket.step);
