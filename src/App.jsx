@@ -9,7 +9,7 @@ import ViewBox from './ViewBox'
 
 
 const ControlPacket = {
-  speed: 0.2,
+  speed: 0.0,
   step: {x: 0.0, y: 0.0},
   step_height_weight: 1.0
 };
@@ -17,9 +17,17 @@ const MonitorChannel = new WebSocket("ws://localhost:8080");
 const ControlChannel = new WebSocket("ws://localhost:8081");
 
 const updateSpeed = (e) => {
-  const speed = Math.sqrt(e.x*e.x + e.y*e.y);
+  const stepLen = Math.sqrt(e.x*e.x + e.y*e.y);
+  const speed = stepLen;
+
   ControlPacket.speed = speed === 0.0 ? 0.5 : speed;
-  ControlPacket.step = {x: e.x, y: e.y};
+  if (stepLen > 0.0) {
+    ControlPacket.step = {x: 0.2*e.x/stepLen + e.x*0.8, y: 0.2*e.y/stepLen + e.y*0.8};
+  }
+  else {
+    ControlPacket.step = {x: 0.0, y: 0.0};
+  }
+  
   if (ControlChannel.readyState == WebSocket.OPEN) {
     console.log(ControlPacket.speed, ControlPacket.step);
     ControlChannel.send(JSON.stringify(ControlPacket));
@@ -80,7 +88,7 @@ const App = () => {
           <Box>
             <Paper sx={{ padding: theme.spacing() }}>
               <Stack direction="row" spacing={2}>
-                <Joystick elevation={2} stickyAxis centerReturn onPositionChange={updateSpeed}></Joystick>
+                <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateSpeed}></Joystick>
                 <Box>
                   <Slider min={0.5} max={1.5} step={0.1} marks orientation="vertical" defaultValue={ControlPacket.step_height_weight} 
                     onChange={updateStepHeightWeight} valueLabelDisplay="auto" />
