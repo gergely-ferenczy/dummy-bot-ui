@@ -1,7 +1,10 @@
 import React from 'react'
 import * as THREE from 'three';
 
+import { useTheme } from '@mui/material/styles';
+
 const BodyElement = (props) => {
+  const theme = useTheme();
 
   const verticalVec = THREE.Object3D.DefaultUp;
   const startVec = new THREE.Vector3(props.start[0], props.start[1], props.start[2]);
@@ -16,8 +19,16 @@ const BodyElement = (props) => {
   const quaternion = new THREE.Quaternion();
   quaternion.setFromAxisAngle(normalVec, angle);
 
-  const material = <meshStandardMaterial color={props.color || '#008080'} />;
-  const materialHighlight = <meshStandardMaterial color="red" />;
+  let material;
+  let materialHighlight;
+  if (theme.palette.mode == 'dark') {
+    material = <meshStandardMaterial color={props.color || theme.palette.primary.main} />;
+    materialHighlight = <meshStandardMaterial color={theme.palette.secondary.main} />;
+  }
+  else {
+    material = <meshStandardMaterial color={props.color || theme.palette.primary.main} />;
+    materialHighlight = <meshStandardMaterial color={theme.palette.secondary.main} />;
+  }
 
   let startBump;
   if (props.startBump) {

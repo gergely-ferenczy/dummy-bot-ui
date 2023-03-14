@@ -56,8 +56,8 @@ const ViewBox = (props) => {
     <Canvas shadows frameloop="demand"  rotation={[0, 0, 0]}
         camera={{ fov: 25, near: 0.01, far: 1000, position: [-ENV_SIZE.x, ENV_SIZE.y, -ENV_SIZE.z] }}>
       <fog attach="fog" color="hotpink" near={1} far={10} makeDefault />
-      <ambientLight intensity={0.6} />
-      <directionalLight intensity={1} castShadow shadow-mapSize-height={1024} shadow-mapSize-width={1024}>
+      <ambientLight intensity={0.4} />
+      <directionalLight intensity={0.6} castShadow shadow-mapSize-height={1024} shadow-mapSize-width={1024}>
           <orthographicCamera attach="shadow-camera" args={[-ENV_SIZE.x/2, ENV_SIZE.x/2, ENV_SIZE.y/2, -ENV_SIZE.y/2]} />
       </directionalLight>
 
