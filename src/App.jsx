@@ -10,25 +10,18 @@ import ViewBox from './ViewBox'
 
 
 const ControlPacket = {
-  speed: 0.5,
   step: {x: 0.0, y: 0.0},
   step_height_weight: 1.0,
-  turn: 0.0
+  turn_angle: 0.0,
+  body_offset: {x: 0.0, y: 0.0, z: 0.0},
+  body_rotation_angle: 0.0,
+  body_rotation_axis: {x: 0.0, y: 0.0, z: 0.0}
 };
 const MonitorChannel = new WebSocket("ws://localhost:8080");
 const ControlChannel = new WebSocket("ws://localhost:8081");
 
 const updateSpeed = (e) => {
-  const stepLen = Math.sqrt(e.x*e.x + e.y*e.y);
-  const speed = stepLen;
-
-  ControlPacket.speed = speed === 0.0 ? 0.5 : speed;
-  if (stepLen > 0.0) {
-    ControlPacket.step = {x: 0.2*e.x/stepLen + e.x*0.8, y: 0.2*e.y/stepLen + e.y*0.8};
-  }
-  else {
-    ControlPacket.step = {x: 0.0, y: 0.0};
-  }
+  ControlPacket.step = {x: e.x, y: e.y};
   
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
@@ -42,9 +35,25 @@ const updateStepHeightWeight = (e, newValue) => {
   }
 };
 
-const updateTurnLen = (e, newValue) => {
-  ControlPacket.turn = -newValue;
-  ControlPacket.speed = newValue === 0.0 ? 0.5 : newValue;
+const updateTurnAngle = (e, newValue) => {
+  ControlPacket.turn_angle = -newValue;
+  if (ControlChannel.readyState == WebSocket.OPEN) {
+    ControlChannel.send(JSON.stringify(ControlPacket));
+  }
+};
+
+const updateBodyOffset = (e) => {
+  ControlPacket.body_offset.x = e.x;
+  ControlPacket.body_offset.y = e.y;
+  if (ControlChannel.readyState == WebSocket.OPEN) {
+    ControlChannel.send(JSON.stringify(ControlPacket));
+  }
+};
+
+const updateBodyRotation = (e) => {
+  ControlPacket.body_rotation_angle = Math.sqrt(e.x*e.x + e.y*e.y);
+  ControlPacket.body_rotation_axis.x = -e.y;
+  ControlPacket.body_rotation_axis.y = e.x;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
@@ -103,14 +112,16 @@ const App = () => {
             <Paper sx={{ padding: theme.spacing() }}>
               <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
-                  <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateSpeed}></Joystick>
+                  <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateSpeed} />
                   <Box>
                     <Slider min={0.5} max={1.5} step={0.1} marks orientation="vertical" defaultValue={ControlPacket.step_height_weight} 
                       onChange={updateStepHeightWeight} valueLabelDisplay="auto" />
                   </Box>
+                  <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateBodyOffset} />
+                  <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateBodyRotation} />
                 </Stack>
-                <Slider style={{ width: 100 }} min={-1.0} max={1.0} step={0.1} marks defaultValue={ControlPacket.turn} 
-                    onChange={updateTurnLen} valueLabelDisplay="auto" />
+                <Slider style={{ width: 100 }} min={-1.0} max={1.0} step={0.1} marks defaultValue={ControlPacket.turn_angle} 
+                    onChange={updateTurnAngle} valueLabelDisplay="auto" />
               </Stack>
             </Paper>
           </Box>
