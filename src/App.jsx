@@ -11,7 +11,7 @@ import ViewBox from './ViewBox'
 
 const ControlPacket = {
   step: {x: 0.0, y: 0.0},
-  step_height_weight: 1.0,
+  step_height_weight: 0.5,
   turn_angle: 0.0,
   body_offset: {x: 0.0, y: 0.0, z: 0.0},
   body_rotation_angle: 0.0,
@@ -52,8 +52,8 @@ const updateBodyOffset = (e) => {
 
 const updateBodyRotation = (e) => {
   ControlPacket.body_rotation_angle = Math.sqrt(e.x*e.x + e.y*e.y);
-  ControlPacket.body_rotation_axis.x = -e.y;
-  ControlPacket.body_rotation_axis.y = e.x;
+  ControlPacket.body_rotation_axis.x = e.y;
+  ControlPacket.body_rotation_axis.z = -e.x;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
@@ -114,7 +114,7 @@ const App = () => {
                 <Stack direction="row" spacing={2}>
                   <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateSpeed} />
                   <Box>
-                    <Slider min={0.5} max={1.5} step={0.1} marks orientation="vertical" defaultValue={ControlPacket.step_height_weight} 
+                    <Slider min={0.0} max={2.0} step={0.1} marks orientation="vertical" defaultValue={ControlPacket.step_height_weight} 
                       onChange={updateStepHeightWeight} valueLabelDisplay="auto" />
                   </Box>
                   <Joystick elevation={2} stickyHandle stickyAxis centerReturn onPositionChange={updateBodyOffset} />
