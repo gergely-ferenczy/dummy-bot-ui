@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box, Slider, Paper, Stack } from '@mui/material';
 import { lightBlue, red } from '@mui/material/colors';
 
-import Joystick from './Joystick';
+import Joystick, { JoystickPosition } from './Joystick';
 import ViewBox from './ViewBox';
 
 const ControlPacket = {
@@ -19,44 +19,59 @@ const ControlPacket = {
 const MonitorChannel = new WebSocket('ws://localhost:8080');
 const ControlChannel = new WebSocket('ws://localhost:8081');
 
-const updateSpeed = (e) => {
-  ControlPacket.step = { x: e.x, y: e.y };
+const updateSpeed = (position: JoystickPosition) => {
+  ControlPacket.step = { x: position.x, y: position.y };
 
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
 
-const updateStepHeightWeight = (e, newValue) => {
+const updateStepHeightWeight = (_: Event, newValue: number) => {
   ControlPacket.step_height_weight = newValue;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
 
-const updateTurnAngle = (e, newValue) => {
+const updateTurnAngle = (_: Event, newValue: number) => {
   ControlPacket.turn_angle = -newValue;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
 
-const updateBodyOffset = (e) => {
-  ControlPacket.body_offset.x = e.x;
-  ControlPacket.body_offset.y = e.y;
+const updateBodyOffset = (position: JoystickPosition) => {
+  ControlPacket.body_offset.x = position.x;
+  ControlPacket.body_offset.y = position.y;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
 
-const updateBodyRotation = (e) => {
-  ControlPacket.body_rotation_angle = Math.sqrt(e.x * e.x + e.y * e.y);
-  ControlPacket.body_rotation_axis.x = e.y;
-  ControlPacket.body_rotation_axis.z = -e.x;
+const updateBodyRotation = (position: JoystickPosition) => {
+  ControlPacket.body_rotation_angle = Math.sqrt(position.x * position.x + position.y * position.y);
+  ControlPacket.body_rotation_axis.x = position.y;
+  ControlPacket.body_rotation_axis.z = -position.x;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
 };
+
+declare module '@mui/material/styles' {
+  interface Theme {
+    viewBox: {
+      gridSectionColor: string;
+      gridCellColor: string;
+    };
+  }
+  interface ThemeOptions {
+    viewBox: {
+      gridSectionColor: string;
+      gridCellColor: string;
+    };
+  }
+}
 
 const lightTheme = createTheme({
   palette: {
@@ -93,8 +108,6 @@ const App = () => {
   const theme = React.useMemo(() => {
     return prefersDarkMode ? darkTheme : lightTheme;
   }, [prefersDarkMode]);
-
-  window.theme = theme;
 
   return (
     <ThemeProvider theme={theme}>

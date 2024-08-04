@@ -1,12 +1,21 @@
-import React from 'react';
 import * as THREE from 'three';
-
 import { useTheme } from '@mui/material/styles';
+import '@react-three/fiber'; // TODO: This is necessary for TS to infer where to source JSX.IntrinsicElements, but I am not sure if there is a better solution.
 
-const BodyElement = (props) => {
+interface BodyElementProps {
+  start: number[];
+  end: number[];
+  color?: string;
+  startBump?: boolean;
+  endBump?: boolean;
+  highlight?: boolean;
+  width?: number;
+}
+
+const BodyElement = (props: BodyElementProps) => {
   const theme = useTheme();
 
-  const verticalVec = THREE.Object3D.DefaultUp;
+  const verticalVec = THREE.Object3D.DEFAULT_UP;
   const startVec = new THREE.Vector3(
     props.start[0],
     props.start[1],
@@ -23,23 +32,12 @@ const BodyElement = (props) => {
   const quaternion = new THREE.Quaternion();
   quaternion.setFromAxisAngle(normalVec, angle);
 
-  let material;
-  let materialHighlight;
-  if (theme.palette.mode == 'dark') {
-    material = (
-      <meshStandardMaterial color={props.color || theme.palette.primary.main} />
-    );
-    materialHighlight = (
-      <meshStandardMaterial color={theme.palette.secondary.main} />
-    );
-  } else {
-    material = (
-      <meshStandardMaterial color={props.color || theme.palette.primary.main} />
-    );
-    materialHighlight = (
-      <meshStandardMaterial color={theme.palette.secondary.main} />
-    );
-  }
+  const material = (
+    <meshStandardMaterial color={props.color || theme.palette.primary.main} />
+  );
+  const materialHighlight = (
+    <meshStandardMaterial color={theme.palette.secondary.main} />
+  );
 
   let startBump;
   if (props.startBump) {

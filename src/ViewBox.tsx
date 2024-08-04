@@ -1,7 +1,6 @@
 import deepEqual from 'deep-equal';
-
 import * as THREE from 'three';
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import {
   Grid as GridPlane,
@@ -10,36 +9,42 @@ import {
   GizmoViewcube,
   Plane
 } from '@react-three/drei';
-
 import { useTheme } from '@mui/material/styles';
-
 import BodyElement from './BodyElement';
 
 const ENV_SIZE = { x: 0.4, y: 0.4, z: 0.4 };
 
-const ViewBox = (props) => {
+interface ViewBoxProps {
+  backendChannel: WebSocket;
+}
+
+interface PositionData {
+  legs: number[][][];
+}
+
+const ViewBox = (props: ViewBoxProps) => {
   const theme = useTheme();
-  const [posData, _setPosData] = useState();
-  const posDataRef = useRef(posData);
-  const setPosData = (data) => {
+  const [posData, _setPosData] = useState<PositionData | null>(null);
+  const posDataRef = useRef<PositionData>(posData);
+  const setPosData = (data: PositionData) => {
     posDataRef.current = data;
     _setPosData(data);
   };
 
   useEffect(() => {
     props.backendChannel.onmessage = (event) => {
-      const newPosData = JSON.parse(event.data);
+      const newPosData = JSON.parse(event.data) as PositionData;
       if (!deepEqual(posDataRef.current, newPosData)) {
         setPosData(newPosData);
       }
     };
     return () => {
-      props.backendChannel.onmessage == null;
+      props.backendChannel.onmessage = null;
     };
-  }, []);
+  }, [props.backendChannel]);
 
   let minLegHeightPos;
-  let bodyPlaneNormal;
+  //let bodyPlaneNormal;
   let bodyPlaneRotation;
   const minLegPositions = [];
 
@@ -55,7 +60,7 @@ const ViewBox = (props) => {
       posData.legs[0][2][2]
     );
 
-    for (var i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; i++) {
       minLegPositions[i] = new THREE.Vector3(
         posData.legs[i][2][0],
         posData.legs[i][2][1],
@@ -66,9 +71,9 @@ const ViewBox = (props) => {
       return a.y - b.y;
     });
 
-    const vec1 = minLegPositions[1].clone().sub(minLegPositions[0]);
-    const vec2 = minLegPositions[2].clone().sub(minLegPositions[0]);
-    bodyPlaneNormal = vec2.clone().cross(vec1).normalize();
+    // const vec1 = minLegPositions[1].clone().sub(minLegPositions[0]);
+    // const vec2 = minLegPositions[2].clone().sub(minLegPositions[0]);
+    //bodyPlaneNormal = vec2.clone().cross(vec1).normalize();
     bodyPlaneRotation = new THREE.Quaternion().identity(); // setFromUnitVectors(bodyPlaneNormal, THREE.Object3D.DefaultUp);
     minLegHeightPos = 0; //minLegPositions[0].applyQuaternion(bodyPlaneRotation).y;
   }
@@ -86,9 +91,9 @@ const ViewBox = (props) => {
       }}
     >
       <fog attach="fog" color="hotpink" near={1} far={10} makeDefault />
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.6} />
       <directionalLight
-        intensity={0.6}
+        intensity={1.4}
         castShadow
         shadow-mapSize-height={1024}
         shadow-mapSize-width={1024}
