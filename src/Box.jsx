@@ -1,5 +1,5 @@
-import React from 'react'
-import { render, useFrame } from '@react-three/fiber'
+import React from 'react';
+import { render, useFrame } from '@react-three/fiber';
 
 const Box = (props) => {
   const meshRef = React.useRef();
@@ -9,13 +9,11 @@ const Box = (props) => {
   });
 
   return (
-    <mesh
-      ref={meshRef}
-      position={[0, 2, 0]} >
+    <mesh ref={meshRef} position={[0, 2, 0]}>
       <cylinderGeometry args={[0.2, 0.2, 1]} />
-      <meshStandardMaterial color='#008080' /> 
+      <meshStandardMaterial color="#008080" />
     </mesh>
-  )
-}
+  );
+};
 
-export default Box
+export default Box;

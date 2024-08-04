@@ -3,7 +3,6 @@ import { useTheme, styled } from '@mui/material/styles';
 import { alpha } from '@mui/system';
 import getOverlayAlpha from '@mui/material/styles/getOverlayAlpha';
 
-
 const JoystickRoot = styled('div', {
   name: 'Joystick',
   slot: 'Root'
@@ -16,7 +15,7 @@ const JoystickRoot = styled('div', {
   ...(theme.palette.mode === 'dark' && {
     backgroundImage: `linear-gradient(${alpha(
       '#fff',
-      getOverlayAlpha(ownerState.elevation),
+      getOverlayAlpha(ownerState.elevation)
     )}, ${alpha('#fff', getOverlayAlpha(ownerState.elevation))})`
   })
 }));
@@ -34,19 +33,18 @@ const JoystickHandle = styled('div', {
   backgroundColor: theme.palette.primary.main,
   borderRadius: '50%',
   boxShadow: theme.shadows[ownerState.elevation],
-  ...(position.x == 0.0 && position.y == 0.0 && { transition: theme.transitions.create(
-    ['top', 'left'],
-    {
-      duration: theme.transitions.duration.short,
-    }
-  )})
+  ...(position.x == 0.0 &&
+    position.y == 0.0 && {
+      transition: theme.transitions.create(['top', 'left'], {
+        duration: theme.transitions.duration.short
+      })
+    })
 }));
-
 
 const Joystick = (props) => {
   const theme = useTheme();
   const rootRef = useRef();
-  const [position, setPosition] = useState({x: 0.0, y: 0.0});
+  const [position, setPosition] = useState({ x: 0.0, y: 0.0 });
 
   const {
     elevation = 1,
@@ -63,23 +61,21 @@ const Joystick = (props) => {
     elevation,
     handleSize,
     size
-  }
-  
+  };
+
   const calculateJoystickPosition = useCallback((e) => {
     if (e.buttons & 1) {
       const left = e.pageX - rootRef.current.offsetLeft;
       const top = e.pageY - rootRef.current.offsetTop;
       let x = left / (size / 2) - 1;
       let y = 1 - top / (size / 2);
-  
+
       const axisPull = (() => {
         if (stickyAxis === true) {
           return 1.5;
-        }
-        else if (typeof stickyAxis === "number") {
-          return Math.max(Math.min(stickyAxis + 1.0, 2.0), 1.0)
-        }
-        else {
+        } else if (typeof stickyAxis === 'number') {
+          return Math.max(Math.min(stickyAxis + 1.0, 2.0), 1.0);
+        } else {
           return false;
         }
       })();
@@ -87,33 +83,31 @@ const Joystick = (props) => {
       if (axisPull) {
         if (x >= 0.0) {
           x = Math.pow(x, axisPull);
-        }
-        else {
+        } else {
           x = -Math.pow(-x, axisPull);
         }
         if (y >= 0.0) {
           y = Math.pow(y, axisPull);
-        }
-        else {
+        } else {
           y = -Math.pow(-y, axisPull);
         }
       }
-      const len = Math.sqrt(x*x + y*y);
+      const len = Math.sqrt(x * x + y * y);
 
       if (len > 1.0) {
         x = x / len;
         y = y / len;
       }
 
-      const eps = 0.1
+      const eps = 0.1;
       if (centerReturn && x > -eps && x < eps && y > -eps && y < eps) {
         x = 0.0;
         y = 0.0;
       }
 
-      setPosition({x: x, y: y});
+      setPosition({ x: x, y: y });
       if (onPositionChange) {
-        onPositionChange({x, y});
+        onPositionChange({ x, y });
       }
     }
   }, []);
@@ -130,9 +124,9 @@ const Joystick = (props) => {
 
   const handleUp = useCallback((e) => {
     if (!stickyHandle) {
-      setPosition({x: 0.0, y: 0.0});
+      setPosition({ x: 0.0, y: 0.0 });
       if (onPositionChange) {
-        onPositionChange({x: 0.0, y: 0.0});
+        onPositionChange({ x: 0.0, y: 0.0 });
       }
     }
 
@@ -141,15 +135,41 @@ const Joystick = (props) => {
   }, []);
 
   return (
-    <JoystickRoot ref={rootRef} ownerState={ownerState} onMouseDown={handleDown}>
-      <svg style={{width: '100%', height: '100%', shapeRendering: 'crispEdges'}}>
-        <line x1={'0px'} x2={'100%'} y1={'50%'} y2={'50%'}  style={{stroke: theme.palette.primary.dark, strokeDasharray: '5, 5'}} />
-        <line x1={'50%'} x2={'50%'}  y1={'0px'} y2={'100%'} style={{stroke: theme.palette.primary.dark, strokeDasharray: '5, 5'}} />
+    <JoystickRoot
+      ref={rootRef}
+      ownerState={ownerState}
+      onMouseDown={handleDown}
+    >
+      <svg
+        style={{ width: '100%', height: '100%', shapeRendering: 'crispEdges' }}
+      >
+        <line
+          x1={'0px'}
+          x2={'100%'}
+          y1={'50%'}
+          y2={'50%'}
+          style={{
+            stroke: theme.palette.primary.dark,
+            strokeDasharray: '5, 5'
+          }}
+        />
+        <line
+          x1={'50%'}
+          x2={'50%'}
+          y1={'0px'}
+          y2={'100%'}
+          style={{
+            stroke: theme.palette.primary.dark,
+            strokeDasharray: '5, 5'
+          }}
+        />
       </svg>
-      <JoystickHandle ownerState={ownerState} position={{x: position.x, y: position.y}} />
+      <JoystickHandle
+        ownerState={ownerState}
+        position={{ x: position.x, y: position.y }}
+      />
     </JoystickRoot>
-  )
+  );
 };
-
 
 export default Joystick;
