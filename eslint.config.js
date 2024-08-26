@@ -6,9 +6,7 @@ import reactHooksEslint from 'eslint-plugin-react-hooks';
 
 export default tsEslint.config(
   {
-    ignores: [
-      'eslint.config.js', 'vite.config.ts', 'dist/**'
-    ]
+    ignores: ['eslint.config.js', 'vite.config.ts', 'dist/**']
   },
   eslint.configs.recommended,
   ...tsEslint.configs.recommendedTypeChecked,
@@ -29,7 +27,9 @@ export default tsEslint.config(
     },
     rules: {
       '@typescript-eslint/require-await': 'off',
-      'react/prop-types': 'off'
+      'react/prop-types': 'off',
+      'react/display-name': 'off',
+      'react/no-unknown-property': 'off'
     },
     settings: {
       react: {

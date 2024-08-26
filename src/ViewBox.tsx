@@ -2,20 +2,15 @@ import deepEqual from 'deep-equal';
 import * as THREE from 'three';
 import { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import {
-  Grid as GridPlane,
-  OrbitControls,
-  GizmoHelper,
-  GizmoViewcube,
-  Plane
-} from '@react-three/drei';
-import { useTheme } from '@mui/material/styles';
 import BodyElement from './BodyElement';
+import { OrbitControls } from '@react-three/drei';
 
 const ENV_SIZE = { x: 0.4, y: 0.4, z: 0.4 };
 
 interface ViewBoxProps {
   backendChannel: WebSocket;
+  speed: number[];
+  turn: number;
 }
 
 interface PositionData {
@@ -23,16 +18,15 @@ interface PositionData {
 }
 
 const ViewBox = (props: ViewBoxProps) => {
-  const theme = useTheme();
   const [posData, _setPosData] = useState<PositionData | null>(null);
-  const posDataRef = useRef<PositionData>(posData);
+  const posDataRef = useRef<PositionData | null>(posData);
   const setPosData = (data: PositionData) => {
     posDataRef.current = data;
     _setPosData(data);
   };
 
   useEffect(() => {
-    props.backendChannel.onmessage = (event) => {
+    props.backendChannel.onmessage = (event: MessageEvent<string>) => {
       const newPosData = JSON.parse(event.data) as PositionData;
       if (!deepEqual(posDataRef.current, newPosData)) {
         setPosData(newPosData);
@@ -43,9 +37,7 @@ const ViewBox = (props: ViewBoxProps) => {
     };
   }, [props.backendChannel]);
 
-  let minLegHeightPos;
-  //let bodyPlaneNormal;
-  let bodyPlaneRotation;
+  let bodyPlaneRotation = new THREE.Quaternion().identity();
   const minLegPositions = [];
 
   if (posData) {
@@ -71,26 +63,17 @@ const ViewBox = (props: ViewBoxProps) => {
       return a.y - b.y;
     });
 
-    // const vec1 = minLegPositions[1].clone().sub(minLegPositions[0]);
-    // const vec2 = minLegPositions[2].clone().sub(minLegPositions[0]);
-    //bodyPlaneNormal = vec2.clone().cross(vec1).normalize();
-    bodyPlaneRotation = new THREE.Quaternion().identity(); // setFromUnitVectors(bodyPlaneNormal, THREE.Object3D.DefaultUp);
-    minLegHeightPos = 0; //minLegPositions[0].applyQuaternion(bodyPlaneRotation).y;
+    bodyPlaneRotation = new THREE.Quaternion().identity();
   }
 
   return (
     <Canvas
       shadows
-      frameloop="demand"
-      rotation={[0, 0, 0]}
-      camera={{
-        fov: 25,
-        near: 0.01,
-        far: 1000,
-        position: [-ENV_SIZE.x, ENV_SIZE.y, -ENV_SIZE.z]
-      }}
+      orthographic
+      camera={{ zoom: 3000, near: 0.1, far: 1000, position: [-1, 1, -1] }}
+      frameloop="always"
     >
-      <fog attach="fog" color="hotpink" near={1} far={10} makeDefault />
+      <fog attach="fog" color="hotpink" near={1} far={10} />
       <ambientLight intensity={0.6} />
       <directionalLight
         intensity={1.4}
@@ -103,42 +86,23 @@ const ViewBox = (props: ViewBoxProps) => {
           args={[
             -ENV_SIZE.x / 2,
             ENV_SIZE.x / 2,
-            ENV_SIZE.y / 2,
-            -ENV_SIZE.y / 2
+            ENV_SIZE.z / 2,
+            -ENV_SIZE.z / 2
           ]}
         />
       </directionalLight>
 
-      <GridPlane
-        receiveShadow
-        args={[ENV_SIZE.x, ENV_SIZE.z]}
-        cellSize={0.02}
-        cellThickness={0.6}
-        cellColor={theme.viewBox.gridCellColor}
-        sectionSize={0.1}
-        sectionThickness={1.0}
-        sectionColor={theme.viewBox.gridSectionColor}
-        fadeStrength={0}
-      />
+      <polarGridHelper args={[ENV_SIZE.x / 2, 36, ENV_SIZE.x * 100]} />
 
-      <Plane
-        receiveShadow
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.001, 0]}
-        args={[ENV_SIZE.x, ENV_SIZE.z]}
-      >
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+        <planeGeometry args={[ENV_SIZE.x, ENV_SIZE.z]} />
         <shadowMaterial attach="material" transparent opacity={0.6} />
-      </Plane>
+      </mesh>
+
       <OrbitControls enableDamping={false} makeDefault />
-      <GizmoHelper alignment="bottom-right" margin={[80, 80]}>
-        <GizmoViewcube color={theme.palette.grey['100']} />
-      </GizmoHelper>
 
       {posData && (
-        <group
-          quaternion={bodyPlaneRotation}
-          position={[0, -minLegHeightPos, 0]}
-        >
+        <group quaternion={bodyPlaneRotation}>
           <BodyElement start={posData.legs[0][0]} end={posData.legs[1][0]} />
           <BodyElement start={posData.legs[1][0]} end={posData.legs[2][0]} />
           <BodyElement start={posData.legs[2][0]} end={posData.legs[5][0]} />
@@ -167,7 +131,7 @@ const ViewBox = (props: ViewBoxProps) => {
             end={posData.legs[0][3]}
             startBump
             endBump
-            highlight={posData.legs[0][3][1] == minLegHeightPos}
+            highlight={posData.legs[0][3][1] == 0.0}
           />
           <BodyElement
             start={posData.legs[1][0]}
@@ -184,7 +148,7 @@ const ViewBox = (props: ViewBoxProps) => {
             end={posData.legs[1][3]}
             startBump
             endBump
-            highlight={posData.legs[1][3][1] == minLegHeightPos}
+            highlight={posData.legs[1][3][1] == 0.0}
           />
           <BodyElement
             start={posData.legs[2][0]}
@@ -201,7 +165,7 @@ const ViewBox = (props: ViewBoxProps) => {
             end={posData.legs[2][3]}
             startBump
             endBump
-            highlight={posData.legs[2][3][1] == minLegHeightPos}
+            highlight={posData.legs[2][3][1] == 0.0}
           />
           <BodyElement
             start={posData.legs[3][0]}
@@ -218,7 +182,7 @@ const ViewBox = (props: ViewBoxProps) => {
             end={posData.legs[3][3]}
             startBump
             endBump
-            highlight={posData.legs[3][3][1] == minLegHeightPos}
+            highlight={posData.legs[3][3][1] == 0.0}
           />
           <BodyElement
             start={posData.legs[4][0]}
@@ -235,7 +199,7 @@ const ViewBox = (props: ViewBoxProps) => {
             end={posData.legs[4][3]}
             startBump
             endBump
-            highlight={posData.legs[4][3][1] == minLegHeightPos}
+            highlight={posData.legs[4][3][1] == 0.0}
           />
           <BodyElement
             start={posData.legs[5][0]}
@@ -252,7 +216,7 @@ const ViewBox = (props: ViewBoxProps) => {
             end={posData.legs[5][3]}
             startBump
             endBump
-            highlight={posData.legs[5][3][1] == minLegHeightPos}
+            highlight={posData.legs[5][3][1] == 0.0}
           />
         </group>
       )}

@@ -32,7 +32,8 @@ interface JoystickHandleProps {
 }
 
 const JoystickRoot = styled('div', {
-  shouldForwardProp: (prop) => prop !== 'size' && prop !== 'elevation' && prop !== 'handleSize',
+  shouldForwardProp: (prop) =>
+    prop !== 'size' && prop !== 'elevation' && prop !== 'handleSize',
   name: 'Joystick',
   slot: 'Root'
 })<JoystickRootProps>(({ theme, size, elevation }) => ({
@@ -50,7 +51,11 @@ const JoystickRoot = styled('div', {
 }));
 
 const JoystickHandle = styled('div', {
-  shouldForwardProp: (prop) => prop !== 'size' && prop !== 'elevation' && prop !== 'handleSize' && prop !== 'position',
+  shouldForwardProp: (prop) =>
+    prop !== 'size' &&
+    prop !== 'elevation' &&
+    prop !== 'handleSize' &&
+    prop !== 'position',
   name: 'Joystick',
   slot: 'Handle'
 })<JoystickHandleProps>(({ theme, size, elevation, handleSize, position }) => ({
@@ -143,9 +148,12 @@ const Joystick = (props: JoystickProps) => {
     [centerReturn, onPositionChange, size, stickyAxis]
   );
 
-  const handleMove = useCallback((e: MouseEvent) => {
-    calculateJoystickPosition(e);
-  }, [calculateJoystickPosition]);
+  const handleMove = useCallback(
+    (e: MouseEvent) => {
+      calculateJoystickPosition(e);
+    },
+    [calculateJoystickPosition]
+  );
 
   const handleUp = useCallback(() => {
     if (!stickyHandle) {
@@ -159,11 +167,14 @@ const Joystick = (props: JoystickProps) => {
     document.removeEventListener('mouseup', handleUp);
   }, [handleMove, onPositionChange, stickyHandle]);
 
-  const handleDown = useCallback((e: React.MouseEvent) => {
-    calculateJoystickPosition(e);
-    document.addEventListener('mousemove', handleMove);
-    document.addEventListener('mouseup', handleUp);
-  }, [calculateJoystickPosition, handleMove, handleUp]);
+  const handleDown = useCallback(
+    (e: React.MouseEvent) => {
+      calculateJoystickPosition(e);
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleUp);
+    },
+    [calculateJoystickPosition, handleMove, handleUp]
+  );
 
   return (
     <JoystickRoot ref={rootRef} onMouseDown={handleDown} {...ownerState}>

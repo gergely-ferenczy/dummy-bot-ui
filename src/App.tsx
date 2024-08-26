@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo, useState } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -19,23 +19,8 @@ const ControlPacket = {
 const MonitorChannel = new WebSocket('ws://localhost:8080');
 const ControlChannel = new WebSocket('ws://localhost:8081');
 
-const updateSpeed = (position: JoystickPosition) => {
-  ControlPacket.step = { x: position.x, y: position.y };
-
-  if (ControlChannel.readyState == WebSocket.OPEN) {
-    ControlChannel.send(JSON.stringify(ControlPacket));
-  }
-};
-
 const updateStepHeightWeight = (_: Event, newValue: number) => {
   ControlPacket.step_height_weight = newValue;
-  if (ControlChannel.readyState == WebSocket.OPEN) {
-    ControlChannel.send(JSON.stringify(ControlPacket));
-  }
-};
-
-const updateTurnAngle = (_: Event, newValue: number) => {
-  ControlPacket.turn_angle = -newValue;
   if (ControlChannel.readyState == WebSocket.OPEN) {
     ControlChannel.send(JSON.stringify(ControlPacket));
   }
@@ -50,7 +35,9 @@ const updateBodyOffset = (position: JoystickPosition) => {
 };
 
 const updateBodyRotation = (position: JoystickPosition) => {
-  ControlPacket.body_rotation_angle = Math.sqrt(position.x * position.x + position.y * position.y);
+  ControlPacket.body_rotation_angle = Math.sqrt(
+    position.x * position.x + position.y * position.y
+  );
   ControlPacket.body_rotation_axis.x = position.y;
   ControlPacket.body_rotation_axis.z = -position.x;
   if (ControlChannel.readyState == WebSocket.OPEN) {
@@ -105,27 +92,53 @@ const App = () => {
   const prefersDarkMode = true;
   useMediaQuery('(prefers-color-scheme: dark)');
 
-  const theme = React.useMemo(() => {
+  const theme = useMemo(() => {
     return prefersDarkMode ? darkTheme : lightTheme;
   }, [prefersDarkMode]);
+
+  const [speed, setSpeed] = useState([0, 0]);
+  const [turn, setTurn] = useState(0);
+
+  const updateSpeed = (position: JoystickPosition) => {
+    ControlPacket.step = { x: position.x, y: position.y };
+
+    if (ControlChannel.readyState == WebSocket.OPEN) {
+      ControlChannel.send(JSON.stringify(ControlPacket));
+    }
+
+    setSpeed([position.x * 0.16, position.y * 0.16]);
+  };
+
+  const updateTurnAngle = (_: Event, newValue: number) => {
+    ControlPacket.turn_angle = -newValue;
+    if (ControlChannel.readyState == WebSocket.OPEN) {
+      ControlChannel.send(JSON.stringify(ControlPacket));
+    }
+
+    setTurn((newValue * Math.PI) / 2.4);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ height: '100%', overflow: 'hidden' }}>
+      <Box sx={{ height: '100%' }}>
         <Box
           sx={{
             height: '100%',
             display: 'grid',
-            gridTemplateColumns: 'min-content min-content',
+            gridTemplateColumns: '1fr min-content',
             gridTemplateRows: '100%',
-            padding: theme.spacing(),
+            padding: theme.spacing(2),
             columnGap: theme.spacing()
           }}
         >
-          <Box sx={{ height: '100%', aspectRatio: '4/3' }}>
+          <Box sx={{ height: '100%', overflow: 'hidden' }}>
             <Paper sx={{ height: '100%', padding: theme.spacing() }}>
-              <ViewBox backendChannel={MonitorChannel} />
+              <ViewBox
+                backendChannel={MonitorChannel}
+                speed={speed}
+                turn={turn}
+              />
             </Paper>
           </Box>
           <Box>
