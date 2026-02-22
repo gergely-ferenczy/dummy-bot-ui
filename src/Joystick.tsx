@@ -1,7 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useTheme, styled } from '@mui/material/styles';
-import { alpha } from '@mui/system';
-import getOverlayAlpha from '@mui/material/styles/getOverlayAlpha';
+import { Paper } from '@mui/material';
 
 export interface JoystickPosition {
   x: number;
@@ -19,8 +18,6 @@ interface JoystickProps {
 }
 
 interface JoystickRootProps {
-  elevation: number;
-  handleSize: number;
   size: number;
 }
 
@@ -31,23 +28,15 @@ interface JoystickHandleProps {
   position: JoystickPosition;
 }
 
-const JoystickRoot = styled('div', {
-  shouldForwardProp: (prop) =>
-    prop !== 'size' && prop !== 'elevation' && prop !== 'handleSize',
+const JoystickRoot = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== 'size',
   name: 'Joystick',
   slot: 'Root'
-})<JoystickRootProps>(({ theme, size, elevation }) => ({
+})<JoystickRootProps>(({ size }) => ({
   height: `${size}px`,
   width: `${size}px`,
   position: 'relative',
-  borderRadius: '50%',
-  boxShadow: theme.shadows[elevation],
-  ...(theme.palette.mode === 'dark' && {
-    backgroundImage: `linear-gradient(${alpha(
-      '#fff',
-      +getOverlayAlpha(elevation)
-    )}, ${alpha('#fff', +getOverlayAlpha(elevation))})`
-  })
+  borderRadius: '50%'
 }));
 
 const JoystickHandle = styled('div', {
@@ -89,12 +78,6 @@ const Joystick = (props: JoystickProps) => {
     centerReturn = false,
     onPositionChange
   } = props;
-
-  const ownerState = {
-    elevation,
-    handleSize,
-    size
-  };
 
   const calculateJoystickPosition = useCallback(
     (e: { buttons: number; pageX: number; pageY: number }) => {
@@ -177,7 +160,7 @@ const Joystick = (props: JoystickProps) => {
   );
 
   return (
-    <JoystickRoot ref={rootRef} onMouseDown={handleDown} {...ownerState}>
+    <JoystickRoot ref={rootRef} onMouseDown={handleDown} size={size} elevation={elevation}>
       <svg
         style={{ width: '100%', height: '100%', shapeRendering: 'crispEdges' }}
       >
@@ -202,7 +185,7 @@ const Joystick = (props: JoystickProps) => {
           }}
         />
       </svg>
-      <JoystickHandle position={position} {...ownerState} />
+      <JoystickHandle position={position} size={size} handleSize={handleSize} elevation={elevation} />
     </JoystickRoot>
   );
 };
